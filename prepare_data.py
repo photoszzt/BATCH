@@ -1,7 +1,6 @@
 import sys
 import numpy as np
 import pandas as pd
-import glob
 import math
 
 
@@ -13,13 +12,13 @@ def new_reading(name):
         for line in lines:
             final = line.split()
             latency.append(float(final[3]))
-	    batch.append(float(final[1]))
+        batch.append(float(final[1]))
     print("std:{}".format(np.std(latency)/np.mean(latency)))
     print("95 percentile:{}".format(np.percentile(latency, 95)))
     return (np.mean(batch),np.mean(latency))
 
 def plot_one_cdf(latency,file_name):
-   num_bins = 20 
+   num_bins = 20
    counts, bin_edges = np.histogram(latency, bins=num_bins, normed=True)
    cdf = np.cumsum(counts)
    with open ("cdf_{}".format(file_name),"w") as fp:
@@ -40,8 +39,8 @@ def cost_calculation(memory_util, billing_time):
     cost = []
     init_prices = 208
     for i in range (len(memory_util)):
-	billing = billing_time[i]
-        temp = memory_util[i] - 128 
+        billing = billing_time[i]
+        temp = memory_util[i] - 128
         temp = math.ceil(temp/64)
         total_compute_gb = temp*104 + 208
         cost.append(billing * (total_compute_gb/1024))
@@ -56,14 +55,14 @@ def cost_per_request(latency_per_batch, measured_batch_size):
         cost = memory_cost * GB_s * billing
         print("billing {} cost {}".format(billing, cost))
         all_cost.append(cost/(2*float(measured_batch_size[i])))
-    #print(all_cost)  
-    return all_cost 
+    #print(all_cost)
+    return all_cost
 def write_results(inter_arrival, results, file_name):
-    with open(file_name,"w") as f:	
+    with open(file_name,"w") as f:
         for i in range (len(inter_arrival)):
-	 #print(val)
-	     f.write("{} \t {}".format(str(inter_arrival[i]),str(results[i])))
-	     f.write('\n')
+     #print(val)
+         f.write("{} \t {}".format(str(inter_arrival[i]),str(results[i])))
+         f.write('\n')
     f.close()
 
 def read_measured_bs(file_name):
@@ -92,12 +91,11 @@ if __name__ =="__main__":
         #c = float(1/float(c))
         file_name = 'Latency_perbatch_batch_{}_inter_arrival_{}_time_out{}_.log'.format(batch,c, time_out)
         latency_per_request_filename = 'Latency_per_request_batch_{}_inter_arrival_{}_time_out{}_.log'.format(batch,c,time_out)
-	print(file_name)
+    print(file_name)
         measured_batch, latency = new_reading(file_name)
         latencies.append(float(latency))#/int(measured_bs[-1])
         latency_per_request.append(read_latecy_per_request(latency_per_request_filename))
         measured_bs.append(measured_batch)
-   
      cost_pre_request = cost_per_request(latencies,measured_bs)
      print(cost_pre_request)
      latency_file = "latency_batch_size_{}_timeout_{}".format(batch,time_out)
@@ -110,4 +108,4 @@ if __name__ =="__main__":
      print ("{},{}".format(len(cost_pre_request), len(inter_arrival)))
      write_results(inter_arrival, cost_pre_request, cost_per_request_file)
      #print(math.ceil(billing/100)*100)
-     #print(memory)	
+     #print(memory)
